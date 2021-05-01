@@ -751,19 +751,22 @@ static char *ngx_http_acme_create_jwk(ngx_conf_t *cf, void *conf, RSA *key, json
 {
     ngx_str_t e, n, tmp;
 
+    const BIGNUM *rn, *re;
+    RSA_get0_key(key, &rn, &re, NULL);
+
     /* Baser64url encode e */
-    tmp.len = BN_num_bytes(key->e);
+    tmp.len = BN_num_bytes(re);
     tmp.data = ngx_alloc(tmp.len, cf->log);
-    tmp.len = BN_bn2bin(key->e, tmp.data);
+    tmp.len = BN_bn2bin(re, tmp.data);
     e.len = ngx_base64_encoded_length(tmp.len);
     e.data = ngx_alloc(e.len, cf->log);
     ngx_encode_base64url(&e, &tmp);
     ngx_free(tmp.data);
 
     /* Baser64url encode n */
-    tmp.len = BN_num_bytes(key->n);
+    tmp.len = BN_num_bytes(rn);
     tmp.data = ngx_alloc(tmp.len, cf->log);
-    tmp.len = BN_bn2bin(key->n, tmp.data);
+    tmp.len = BN_bn2bin(rn, tmp.data);
     n.len = ngx_base64_encoded_length(tmp.len);
     n.data = ngx_alloc(n.len, cf->log);
     ngx_encode_base64url(&n, &tmp);
